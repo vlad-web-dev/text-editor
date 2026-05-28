@@ -1,0 +1,108 @@
+@use './variables' as *;
+
+.mobile-editor-dialog {
+  &__overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: $z-dialog-overlay;
+  }
+
+  &__container {
+    position: fixed;
+    inset: 0;
+    z-index: $z-dialog;
+    display: flex;
+    flex-direction: column;
+    background: $color-bg-page;
+  }
+
+  // ─── Header ───────────────────────────────────────────────────────────────
+  &__header {
+    display: flex;
+    align-items: center;
+    height: 56px;
+    padding: 0 $spacing-md;
+    background: $color-bg-page;
+    border-bottom: 1px solid $color-border-mobile;
+    flex-shrink: 0;
+  }
+
+  &__back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: $border-radius-sm;
+    color: $color-text;
+    font-size: 20px;
+    transition: background $transition-fast;
+    flex-shrink: 0;
+
+    &:hover { background: $color-bg-hover; }
+  }
+
+  &__title {
+    font-family: $font-family;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 26px;
+    color: $color-text;
+    margin: 0;
+    flex: 1;
+    text-align: center;
+    margin-right: 32px; // balance back-btn width
+  }
+
+  // ─── Scrollable editor area ───────────────────────────────────────────────
+  &__content {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    -webkit-overflow-scrolling: touch;
+    padding: $spacing-md;
+    background: $color-bg-page;
+  }
+
+  // ─── Editor box inside content ────────────────────────────────────────────
+  &__editor-wrapper {
+    background: $color-bg-white;
+    border: 1px solid $color-border;
+    border-radius: $border-radius-md;
+    overflow: hidden;
+    flex: 1;
+  }
+
+  // ─── Footer: full-width Save ──────────────────────────────────────────────
+  &__footer {
+    padding: $spacing-md;
+    padding-bottom: max($spacing-md, env(safe-area-inset-bottom));
+    background: $color-bg-page;
+    flex-shrink: 0;
+  }
+
+  &__save-btn {
+    display: block;
+    width: 100%;
+    padding: 10px $spacing-lg;
+    background: $color-primary;
+    color: $color-bg-white;
+    border: 1px solid $color-primary-border;
+    border-radius: $border-radius-md;
+    font-family: $font-family;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 24px;
+    cursor: pointer;
+    transition: background $transition-fast;
+    text-align: center;
+
+    &:hover    { background: $color-primary-hover; }
+    &:disabled { opacity: 0.55; cursor: not-allowed; }
+  }
+}

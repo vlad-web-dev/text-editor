@@ -1,0 +1,47 @@
+// Each partial imports its own variables. Sass deduplicates @use of the same file.
+@use 'variables' as *;
+@use 'about-section';
+@use 'editor-toolbar';
+@use 'mobile-editor-dialog';
+
+// ─── Global resets ────────────────────────────────────────────────────────────
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: $font-family;
+  font-size: $font-base;
+  color: $color-text;
+  background: $color-bg-page;
+  -webkit-font-smoothing: antialiased;
+}
+
+// ─── Tiptap ProseMirror base ──────────────────────────────────────────────────
+.ProseMirror {
+  outline: none;
+  padding: $spacing-md;
+  min-height: 200px;
+  line-height: 1.7;
+
+  p {
+    margin: 0 0 $spacing-sm;
+
+    &:last-child { margin-bottom: 0; }
+  }
+
+  blockquote {
+    border-left: 4px solid $color-border;
+    margin: $spacing-md 0;
+    padding: $spacing-sm $spacing-md;
+    color: $color-text-muted;
+    font-style: italic;
+  }
+
+  &.ProseMirror-focused {
+    outline: none;
+  }
+}

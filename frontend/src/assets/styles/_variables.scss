@@ -1,0 +1,55 @@
+// ─── Brand palette — exact Figma tokens ──────────────────────────────────────
+$color-primary:         #64362d;   // Button/Base
+$color-primary-border:  #3e1007;   // Button/Stroke
+$color-primary-hover:   #4a2820;
+$color-primary-light:   #f5e6d5;   // active states
+
+$color-bg-page:         #fff8ef;   // Main/Content BG
+$color-bg-panel:        #fce7d2;   // Primary Block/Base (desktop panel)
+$color-bg-white:        #ffffff;
+$color-bg-hover:        rgba(61, 31, 29, 0.06);
+$color-bg-active:       rgba(61, 31, 29, 0.12);
+
+$color-border:          #d9d9d9;   // Standart/Gray 20 — editor, toolbar dividers
+$color-border-panel:    #e8d3be;   // Primary Block/Base Stroke
+$color-border-cancel:   #d9c4af;   // Cancel button border
+$color-border-mobile:   #dcd5cc;   // Main/Content BG -35
+$color-border-focus:    #c4a882;
+
+$color-text:            #3c1f1d;   // Main/Font
+$color-text-muted:      #8b7355;
+
+$color-draft-bg:        #fff8e1;
+$color-draft-border:    #f59e0b;
+$color-draft-text:      #92400e;
+
+$color-error:           #dc2626;
+
+// ─── Spacing ─────────────────────────────────────────────────────────────────
+$spacing-xs:  4px;
+$spacing-sm:  8px;
+$spacing-md:  16px;
+$spacing-lg:  24px;
+$spacing-xl:  32px;
+
+// ─── Typography ──────────────────────────────────────────────────────────────
+$font-base:   16px;
+$font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+// ─── Borders ─────────────────────────────────────────────────────────────────
+$border-radius-sm:  4px;
+$border-radius-md:  6px;
+$border-radius-lg:  12px;
+
+// ─── Breakpoints ─────────────────────────────────────────────────────────────
+$bp-mobile: 768px;
+
+// ─── Z-index layers ──────────────────────────────────────────────────────────
+$z-edit-btn:       10;
+$z-dialog-overlay: 100;
+$z-dialog:         101;
+$z-dropdown:       102;
+
+// ─── Transitions ─────────────────────────────────────────────────────────────
+$transition-fast: 0.12s ease;
+$transition-base: 0.2s ease;

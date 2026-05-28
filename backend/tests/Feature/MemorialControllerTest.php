@@ -146,7 +146,7 @@ class MemorialControllerTest extends TestCase
 
         $this->postJson("/api/memorials/{$this->memorial->id}/draft", [
             'content_html' => '<p>Updated draft</p>',
-        ])->assertCreated();
+        ])->assertOk();
 
         // Still only one draft row
         $this->assertDatabaseCount('memorial_drafts', 1);

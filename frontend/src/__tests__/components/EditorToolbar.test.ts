@@ -61,7 +61,7 @@ afterEach(() => {
 describe('rendering', () => {
   it('renders 3 dropdown trigger buttons', () => {
     const wrapper = mountToolbar()
-    expect(wrapper.findAll('.editor-toolbar__btn--wide')).toHaveLength(3)
+    expect(wrapper.findAll('.editor-toolbar__btn_wide')).toHaveLength(3)
   })
 
   it('renders font size trigger button', () => {
@@ -165,32 +165,32 @@ describe('dropdown behaviour', () => {
 // ─── Active state classes ─────────────────────────────────────────────────────
 
 describe('active state classes', () => {
-  it('adds --active to bold button when bold is active', async () => {
+  it('adds _active to bold button when bold is active', async () => {
     const editor = makeEditorMock()
     editor.isActive.mockImplementation((arg: unknown) => arg === 'bold')
     const wrapper = mountToolbar(editor as never)
     await wrapper.vm.$nextTick()
 
-    expect(wrapper.find('[title="Bold (Ctrl+B)"]').classes()).toContain('editor-toolbar__btn--active')
-    expect(wrapper.find('[title="Italic (Ctrl+I)"]').classes()).not.toContain('editor-toolbar__btn--active')
+    expect(wrapper.find('[title="Bold (Ctrl+B)"]').classes()).toContain('editor-toolbar__btn_active')
+    expect(wrapper.find('[title="Italic (Ctrl+I)"]').classes()).not.toContain('editor-toolbar__btn_active')
   })
 
-  it('adds --active to blockquote button when blockquote is active', async () => {
+  it('adds _active to blockquote button when blockquote is active', async () => {
     const editor = makeEditorMock()
     editor.isActive.mockImplementation((arg: unknown) => arg === 'blockquote')
     const wrapper = mountToolbar(editor as never)
     await wrapper.vm.$nextTick()
 
-    expect(wrapper.find('[title="Blockquote"]').classes()).toContain('editor-toolbar__btn--active')
+    expect(wrapper.find('[title="Blockquote"]').classes()).toContain('editor-toolbar__btn_active')
   })
 
-  it('adds --active to link button when link is active', async () => {
+  it('adds _active to link button when link is active', async () => {
     const editor = makeEditorMock()
     editor.isActive.mockImplementation((arg: unknown) => arg === 'link')
     const wrapper = mountToolbar(editor as never)
     await wrapper.vm.$nextTick()
 
-    expect(wrapper.find('[title="Link"]').classes()).toContain('editor-toolbar__btn--active')
+    expect(wrapper.find('[title="Link"]').classes()).toContain('editor-toolbar__btn_active')
   })
 })
 

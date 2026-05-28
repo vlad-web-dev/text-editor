@@ -43,12 +43,12 @@ interface FontOption {
 }
 
 const FONT_OPTIONS: FontOption[] = [
-  { label: 'Small',     cls: '--small', apply: e => e.chain().focus().setFontSize('12').run(),           isActive: e => e.isActive('textStyle', { fontSize: '12' }) },
-  { label: 'Normal',    cls: '--normal', apply: e => e.chain().focus().setFontSize('14').run(),          isActive: e => e.isActive('textStyle', { fontSize: '14' }) },
-  { label: 'Large',     cls: '--large', apply: e => e.chain().focus().setFontSize('20').run(),           isActive: e => e.isActive('textStyle', { fontSize: '20' }) },
-  { label: 'Heading 1', cls: '--h1',    apply: e => e.chain().focus().toggleHeading({ level: 1 }).run(), isActive: e => e.isActive('heading', { level: 1 }) },
-  { label: 'Heading 2', cls: '--h2',    apply: e => e.chain().focus().toggleHeading({ level: 2 }).run(), isActive: e => e.isActive('heading', { level: 2 }) },
-  { label: 'Heading 3', cls: '--h3',    apply: e => e.chain().focus().toggleHeading({ level: 3 }).run(), isActive: e => e.isActive('heading', { level: 3 }) },
+  { label: 'Small',     cls: '_small', apply: e => e.chain().focus().setFontSize('12').run(),           isActive: e => e.isActive('textStyle', { fontSize: '12' }) },
+  { label: 'Normal',    cls: '_normal', apply: e => e.chain().focus().setFontSize('14').run(),          isActive: e => e.isActive('textStyle', { fontSize: '14' }) },
+  { label: 'Large',     cls: '_large', apply: e => e.chain().focus().setFontSize('20').run(),           isActive: e => e.isActive('textStyle', { fontSize: '20' }) },
+  { label: 'Heading 1', cls: '_h1',    apply: e => e.chain().focus().toggleHeading({ level: 1 }).run(), isActive: e => e.isActive('heading', { level: 1 }) },
+  { label: 'Heading 2', cls: '_h2',    apply: e => e.chain().focus().toggleHeading({ level: 2 }).run(), isActive: e => e.isActive('heading', { level: 2 }) },
+  { label: 'Heading 3', cls: '_h3',    apply: e => e.chain().focus().toggleHeading({ level: 3 }).run(), isActive: e => e.isActive('heading', { level: 3 }) },
 ]
 
 const ALIGN_OPTIONS = [
@@ -142,19 +142,19 @@ function handleLink() {
   <div class="editor-toolbar">
 
     <!-- ── Undo / Redo  (mobile only) ───────────────────────────────────────── -->
-    <button class="editor-toolbar__btn editor-toolbar__btn--history" title="Undo" @click="editor?.chain().focus().undo().run()">
+    <button class="editor-toolbar__btn editor-toolbar__btn_history" title="Undo" @click="editor?.chain().focus().undo().run()">
       <span class="editor-toolbar__icon" v-html="undoIcon" />
     </button>
-    <button class="editor-toolbar__btn editor-toolbar__btn--history" title="Redo" @click="editor?.chain().focus().redo().run()">
+    <button class="editor-toolbar__btn editor-toolbar__btn_history" title="Redo" @click="editor?.chain().focus().redo().run()">
       <span class="editor-toolbar__icon" v-html="redoIcon" />
     </button>
-    <span class="editor-toolbar__sep editor-toolbar__sep--history" />
+    <span class="editor-toolbar__sep editor-toolbar__sep_history" />
 
     <!-- ── Font size ────────────────────────────────────────────────────────── -->
     <button
       ref="fontsizeBtnRef"
-      class="editor-toolbar__btn editor-toolbar__btn--wide"
-      :class="{ 'editor-toolbar__btn--open': fontsizeOpen }"
+      class="editor-toolbar__btn editor-toolbar__btn_wide"
+      :class="{ 'editor-toolbar__btn_open': fontsizeOpen }"
       title="Font size"
       @click.stop="fontsizeOpen = !fontsizeOpen"
     >
@@ -163,17 +163,17 @@ function handleLink() {
     </button>
 
     <!-- ── Bold ─────────────────────────────────────────────────────────────── -->
-    <button class="editor-toolbar__btn" :class="{ 'editor-toolbar__btn--active': editor?.isActive('bold') }" title="Bold (Ctrl+B)" @click="editor?.chain().focus().toggleBold().run()">
+    <button class="editor-toolbar__btn" :class="{ 'editor-toolbar__btn_active': editor?.isActive('bold') }" title="Bold (Ctrl+B)" @click="editor?.chain().focus().toggleBold().run()">
       <span class="editor-toolbar__icon" v-html="boldIcon" />
     </button>
 
     <!-- ── Italic ───────────────────────────────────────────────────────────── -->
-    <button class="editor-toolbar__btn" :class="{ 'editor-toolbar__btn--active': editor?.isActive('italic') }" title="Italic (Ctrl+I)" @click="editor?.chain().focus().toggleItalic().run()">
+    <button class="editor-toolbar__btn" :class="{ 'editor-toolbar__btn_active': editor?.isActive('italic') }" title="Italic (Ctrl+I)" @click="editor?.chain().focus().toggleItalic().run()">
       <span class="editor-toolbar__icon" v-html="italicIcon" />
     </button>
 
     <!-- ── Underline ─────────────────────────────────────────────────────────── -->
-    <button class="editor-toolbar__btn" :class="{ 'editor-toolbar__btn--active': editor?.isActive('underline') }" title="Underline (Ctrl+U)" @click="editor?.chain().focus().toggleUnderline().run()">
+    <button class="editor-toolbar__btn" :class="{ 'editor-toolbar__btn_active': editor?.isActive('underline') }" title="Underline (Ctrl+U)" @click="editor?.chain().focus().toggleUnderline().run()">
       <span class="editor-toolbar__icon" v-html="underlineIcon" />
     </button>
 
@@ -186,12 +186,12 @@ function handleLink() {
     <span class="editor-toolbar__sep" />
 
     <!-- ── Link ─────────────────────────────────────────────────────────────── -->
-    <button class="editor-toolbar__btn" :class="{ 'editor-toolbar__btn--active': editor?.isActive('link') }" title="Link" @click="handleLink">
+    <button class="editor-toolbar__btn" :class="{ 'editor-toolbar__btn_active': editor?.isActive('link') }" title="Link" @click="handleLink">
       <span class="editor-toolbar__icon" v-html="linkIcon" />
     </button>
 
     <!-- ── Blockquote ────────────────────────────────────────────────────────── -->
-    <button class="editor-toolbar__btn" :class="{ 'editor-toolbar__btn--active': editor?.isActive('blockquote') }" title="Blockquote" @click="editor?.chain().focus().toggleBlockquote().run()">
+    <button class="editor-toolbar__btn" :class="{ 'editor-toolbar__btn_active': editor?.isActive('blockquote') }" title="Blockquote" @click="editor?.chain().focus().toggleBlockquote().run()">
       <span class="editor-toolbar__icon" v-html="blockquoteIcon" />
     </button>
 
@@ -200,8 +200,8 @@ function handleLink() {
     <!-- ── Align ─────────────────────────────────────────────────────────────── -->
     <button
       ref="alignBtnRef"
-      class="editor-toolbar__btn editor-toolbar__btn--wide"
-      :class="{ 'editor-toolbar__btn--open': alignOpen }"
+      class="editor-toolbar__btn editor-toolbar__btn_wide"
+      :class="{ 'editor-toolbar__btn_open': alignOpen }"
       title="Text alignment"
       @click.stop="alignOpen = !alignOpen"
     >
@@ -212,8 +212,8 @@ function handleLink() {
     <!-- ── List ──────────────────────────────────────────────────────────────── -->
     <button
       ref="listBtnRef"
-      class="editor-toolbar__btn editor-toolbar__btn--wide"
-      :class="{ 'editor-toolbar__btn--open': listOpen }"
+      class="editor-toolbar__btn editor-toolbar__btn_wide"
+      :class="{ 'editor-toolbar__btn_open': listOpen }"
       title="Lists"
       @click.stop="listOpen = !listOpen"
     >
@@ -244,7 +244,7 @@ function handleLink() {
     </button>
 
     <!-- ── Code block ────────────────────────────────────────────────────────── -->
-    <button class="editor-toolbar__btn" :class="{ 'editor-toolbar__btn--active': editor?.isActive('codeBlock') }" title="Code block" @click="editor?.chain().focus().toggleCodeBlock().run()">
+    <button class="editor-toolbar__btn" :class="{ 'editor-toolbar__btn_active': editor?.isActive('codeBlock') }" title="Code block" @click="editor?.chain().focus().toggleCodeBlock().run()">
       <span class="editor-toolbar__icon" v-html="codeIcon" />
     </button>
 
@@ -261,7 +261,7 @@ function handleLink() {
       <button
         v-for="opt in FONT_OPTIONS" :key="opt.label"
         class="editor-toolbar__dropdown-item"
-        :class="[`editor-toolbar__dropdown-item${opt.cls}`, { 'editor-toolbar__dropdown-item--active': editor ? opt.isActive(editor) : false }]"
+        :class="[`editor-toolbar__dropdown-item${opt.cls}`, { 'editor-toolbar__dropdown-item_active': editor ? opt.isActive(editor) : false }]"
         @click="selectFont(opt)"
       >{{ opt.label }}</button>
     </div>
@@ -274,8 +274,8 @@ function handleLink() {
     >
       <button
         v-for="opt in ALIGN_OPTIONS" :key="opt.value"
-        class="editor-toolbar__dropdown-item editor-toolbar__dropdown-item--normal"
-        :class="{ 'editor-toolbar__dropdown-item--active': editor?.isActive({ textAlign: opt.value }) }"
+        class="editor-toolbar__dropdown-item editor-toolbar__dropdown-item_normal"
+        :class="{ 'editor-toolbar__dropdown-item_active': editor?.isActive({ textAlign: opt.value }) }"
         @click="selectAlign(opt.value)"
       >{{ opt.label }}</button>
     </div>
@@ -288,8 +288,8 @@ function handleLink() {
     >
       <button
         v-for="opt in LIST_OPTIONS" :key="opt.label"
-        class="editor-toolbar__dropdown-item editor-toolbar__dropdown-item--normal"
-        :class="{ 'editor-toolbar__dropdown-item--active': editor ? opt.isActive(editor) : false }"
+        class="editor-toolbar__dropdown-item editor-toolbar__dropdown-item_normal"
+        :class="{ 'editor-toolbar__dropdown-item_active': editor ? opt.isActive(editor) : false }"
         @click="selectList(opt)"
       >{{ opt.label }}</button>
     </div>

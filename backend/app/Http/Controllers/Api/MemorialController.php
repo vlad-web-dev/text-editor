@@ -56,7 +56,7 @@ class MemorialController extends Controller
             'memorialId'  => $draft->memorial_id,
             'contentHtml' => $draft->content_html,
             'updatedAt'   => $draft->updated_at,
-        ], 201);
+        ], $draft->wasRecentlyCreated ? 201 : 200);
     }
 
     public function deleteDraft(Memorial $memorial): JsonResponse

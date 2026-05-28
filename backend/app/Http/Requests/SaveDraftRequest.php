@@ -18,7 +18,7 @@ class SaveDraftRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'content_html' => ['required', 'string'],
+            'content_html' => ['required', 'string', 'max:65535'],
         ];
     }
 }

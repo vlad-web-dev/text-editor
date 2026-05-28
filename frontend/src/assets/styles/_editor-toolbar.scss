@@ -25,11 +25,11 @@
     transition: background $transition-fast;
 
     &:hover { background: $color-bg-hover; }
-    &--active { background: $color-bg-active; }
-    &--open   { background: $color-bg-active; }
+    &_active { background: $color-bg-active; }
+    &_open   { background: $color-bg-active; }
 
     // Dropdown trigger: wider to fit icon + caret (5 + 18 + 10 + 5 = 38px)
-    &--wide {
+    &_wide {
       width: auto;
       padding: 5px;
       gap: 0;
@@ -37,7 +37,7 @@
     }
 
     // Mobile-only history buttons — hidden on desktop
-    &--history { display: none; }
+    &_history { display: none; }
   }
 
   // ─── Icon container — 18×18 ───────────────────────────────────────────────
@@ -71,8 +71,8 @@
   }
 
   // ─── Active icon color via CSS var ────────────────────────────────────────
-  &__btn--active &__icon svg,
-  &__btn--active &__caret svg {
+  &__btn_active &__icon svg,
+  &__btn_active &__caret svg {
     --fill-0: #{$color-text};
   }
 
@@ -83,7 +83,7 @@
     background: $color-border;
     flex-shrink: 0;
 
-    &--history { display: none; }
+    &_history { display: none; }
   }
 
   // ─── Dropdown panel (teleported to body, uses position:fixed via inline style) ──
@@ -112,13 +112,13 @@
     line-height: 1.3;
 
     &:hover      { background: $color-bg-hover; }
-    &--active    { background: $color-primary-light; }
-    &--small     { font-size: 12px; }
-    &--normal    { font-size: 14px; }
-    &--large     { font-size: 20px; }
-    &--h1        { font-size: 28px; font-weight: 700; line-height: 1.2; }
-    &--h2        { font-size: 22px; font-weight: 700; line-height: 1.2; }
-    &--h3        { font-size: 18px; font-weight: 700; line-height: 1.2; }
+    &_active    { background: $color-primary-light; }
+    &_small     { font-size: 12px; }
+    &_normal    { font-size: 14px; }
+    &_large     { font-size: 20px; }
+    &_h1        { font-size: 28px; font-weight: 700; line-height: 1.2; }
+    &_h2        { font-size: 22px; font-weight: 700; line-height: 1.2; }
+    &_h3        { font-size: 18px; font-weight: 700; line-height: 1.2; }
   }
 
   // ─── Hidden color input ───────────────────────────────────────────────────
@@ -149,8 +149,8 @@
       height: 38px;
       padding: 10px;
 
-      &--history { display: flex; }
-      &--wide { width: auto; padding: 10px; }
+      &_history { display: flex; }
+      &_wide { width: auto; padding: 10px; }
     }
 
     &__icon { width: 18px; height: 18px; }
@@ -158,7 +158,7 @@
 
     &__sep {
       height: 16px;
-      &--history { display: block; }
+      &_history { display: block; }
     }
   }
 }

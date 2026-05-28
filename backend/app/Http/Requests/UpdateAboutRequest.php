@@ -18,7 +18,7 @@ class UpdateAboutRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'about_html' => ['required', 'string'],
+            'about_html' => ['required', 'string', 'max:65535'],
         ];
     }
 }

@@ -63,6 +63,11 @@ export const useAboutStore = defineStore('about', () => {
     isSaving.value = true
     error.value = null
 
+    if (draftTimer) {
+      clearTimeout(draftTimer)
+      draftTimer = null
+    }
+
     try {
       const updated = await api.patchAbout(memorial.value.id, html)
       savedContent.value = updated.aboutHtml

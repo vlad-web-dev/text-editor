@@ -73,6 +73,37 @@ editor/
 | `POST` | `/api/memorials/{id}/draft` | Save/update draft |
 | `DELETE` | `/api/memorials/{id}/draft` | Delete draft |
 
+## Testing
+
+### Frontend (Vitest + Vue Test Utils)
+
+```bash
+cd frontend
+npm run test
+```
+
+Covers:
+- **`AboutSection`** — static view rendering, draft banner visibility, edit mode (open/close, Save/Cancel buttons, save call, disabled state, error display, draft vs saved content passed to editor)
+- **`EditorToolbar`** — rendering all 4 groups and dropdowns, dropdown open/close/mutual-exclusion behaviour, active-state classes (bold, italic, link, blockquote), every toolbar command (bold, italic, underline, color, font size, heading, link set/unset, blockquote, alignment, lists, indent/outdent, hr, clear, code block), null-editor safety
+- **`aboutStore`** — `loadMemorial` (localStorage-first draft, backend fallback, API error), `currentContent` computed, `startEditing`/`stopEditing`, `cancelEditing` (preserves draft, cancels debounce), `saveDraft` (debounce timing, reset, localStorage + API sync, silent API failure), `saveContent` (patch call, draft clear, edit-mode exit, error handling, isSaving reset, no-op when unloaded)
+
+### Backend (PHPUnit / Laravel Feature tests)
+
+```bash
+cd backend
+php artisan test
+```
+
+Covers all 5 API endpoints with real SQLite DB (`RefreshDatabase`):
+- **GET** `/api/memorials/{id}` — returns data, 404 for unknown
+- **PATCH** `/api/memorials/{id}/about` — saves HTML, clears draft, 422 validation
+- **GET** `/api/memorials/{id}/draft` — returns draft, 404 when none
+- **POST** `/api/memorials/{id}/draft` — creates draft, upserts (no duplicates), 422 validation
+- **DELETE** `/api/memorials/{id}/draft` — removes draft, idempotent
+- **Isolation** — draft scoped per memorial, cascade delete on memorial removal
+
+---
+
 ## Features
 
 - **Inline rich text editing** — click Edit to switch the text block into a Tiptap editor

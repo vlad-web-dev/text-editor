@@ -6,6 +6,7 @@ const props = defineProps<{
   name: string
   initialContent: string
   isSaving: boolean
+  error: string | null
 }>()
 
 const emit = defineEmits<{
@@ -45,6 +46,7 @@ function handleSave() {
       </div>
 
       <div class="mobile-editor-dialog__footer">
+        <p v-if="error" class="mobile-editor-dialog__error">{{ error }}</p>
         <button
           class="mobile-editor-dialog__save-btn"
           :disabled="isSaving"

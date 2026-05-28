@@ -77,6 +77,15 @@ class MemorialControllerTest extends TestCase
         ]);
     }
 
+    public function test_update_about_strips_xss_payloads(): void
+    {
+        $this->patchJson("/api/memorials/{$this->memorial->id}/about", [
+            'about_html' => '<p>Safe</p><script>alert(1)</script><img src=x onerror=alert(2)>',
+        ])
+            ->assertOk()
+            ->assertJsonPath('aboutHtml', '<p>Safe</p>');
+    }
+
     public function test_update_about_returns_422_when_about_html_missing(): void
     {
         $this->patchJson("/api/memorials/{$this->memorial->id}/about", [])

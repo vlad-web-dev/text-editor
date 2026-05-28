@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 import EditorToolbar from '@/components/memorial/EditorToolbar.vue'
 
 // Chainable mock: editor?.chain().focus().<cmd>().run()
-function makeEditorMock() {
+function makeEditorMock({ canLift = false, canSink = false, canDecreaseIndent = false, inListItem = false } = {}) {
   const run = vi.fn()
   const chain: Record<string, unknown> = {
     focus: () => chain,
@@ -22,6 +22,8 @@ function makeEditorMock() {
     setTextAlign: () => chain,
     liftListItem: () => chain,
     sinkListItem: () => chain,
+    increaseIndent: () => chain,
+    decreaseIndent: () => chain,
     setHorizontalRule: () => chain,
     clearNodes: () => chain,
     unsetAllMarks: () => chain,
@@ -29,9 +31,15 @@ function makeEditorMock() {
     redo: () => chain,
     run,
   }
+  const canChain: Record<string, unknown> = {
+    liftListItem: () => canLift,
+    sinkListItem: () => canSink,
+    decreaseIndent: () => canDecreaseIndent,
+  }
   return {
-    isActive: vi.fn().mockReturnValue(false),
+    isActive: vi.fn((arg: unknown) => arg === 'listItem' ? inListItem : false),
     chain: vi.fn().mockReturnValue(chain),
+    can: vi.fn().mockReturnValue(canChain),
     _run: run,
   }
 }
@@ -320,8 +328,8 @@ describe('button commands', () => {
     expect(toggleBulletList).toHaveBeenCalled()
   })
 
-  it('calls liftListItem on outdent click', async () => {
-    const editor = makeEditorMock()
+  it('calls liftListItem on outdent click when inside a list item', async () => {
+    const editor = makeEditorMock({ canLift: true, inListItem: true })
     const chain = editor.chain()
     const liftListItem = vi.spyOn(chain as never, 'liftListItem').mockReturnValue(chain)
     const wrapper = mountToolbar(editor as never)
@@ -330,14 +338,55 @@ describe('button commands', () => {
     expect(liftListItem).toHaveBeenCalledWith('listItem')
   })
 
-  it('calls sinkListItem on indent click', async () => {
-    const editor = makeEditorMock()
+  it('calls sinkListItem on indent click when inside a list item', async () => {
+    const editor = makeEditorMock({ canSink: true, inListItem: true })
     const chain = editor.chain()
     const sinkListItem = vi.spyOn(chain as never, 'sinkListItem').mockReturnValue(chain)
     const wrapper = mountToolbar(editor as never)
 
     await wrapper.find('[title="Increase indent"]').trigger('click')
     expect(sinkListItem).toHaveBeenCalledWith('listItem')
+  })
+
+  it('calls increaseIndent on indent click when outside a list', async () => {
+    const editor = makeEditorMock({ inListItem: false })
+    const chain = editor.chain()
+    const increaseIndent = vi.spyOn(chain as never, 'increaseIndent').mockReturnValue(chain)
+    const wrapper = mountToolbar(editor as never)
+
+    await wrapper.find('[title="Increase indent"]').trigger('click')
+    expect(increaseIndent).toHaveBeenCalled()
+  })
+
+  it('calls decreaseIndent on outdent click when outside a list', async () => {
+    const editor = makeEditorMock({ canDecreaseIndent: true, inListItem: false })
+    const chain = editor.chain()
+    const decreaseIndent = vi.spyOn(chain as never, 'decreaseIndent').mockReturnValue(chain)
+    const wrapper = mountToolbar(editor as never)
+
+    await wrapper.find('[title="Decrease indent"]').trigger('click')
+    expect(decreaseIndent).toHaveBeenCalled()
+  })
+
+  it('disables outdent button when not in list and no indent applied', async () => {
+    const editor = makeEditorMock({ canLift: false, canDecreaseIndent: false, inListItem: false })
+    const wrapper = mountToolbar(editor as never)
+    await wrapper.vm.$nextTick()
+    expect(wrapper.find('[title="Decrease indent"]').attributes('disabled')).toBeDefined()
+  })
+
+  it('enables outdent button when paragraph has indent', async () => {
+    const editor = makeEditorMock({ canDecreaseIndent: true, inListItem: false })
+    const wrapper = mountToolbar(editor as never)
+    await wrapper.vm.$nextTick()
+    expect(wrapper.find('[title="Decrease indent"]').attributes('disabled')).toBeUndefined()
+  })
+
+  it('increase indent button is always enabled', async () => {
+    const editor = makeEditorMock()
+    const wrapper = mountToolbar(editor as never)
+    await wrapper.vm.$nextTick()
+    expect(wrapper.find('[title="Increase indent"]').attributes('disabled')).toBeUndefined()
   })
 
   it('calls setHorizontalRule on hr click', async () => {

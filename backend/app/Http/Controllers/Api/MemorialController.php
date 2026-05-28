@@ -7,6 +7,7 @@ use App\Http\Requests\SaveDraftRequest;
 use App\Http\Requests\UpdateAboutRequest;
 use App\Http\Resources\MemorialResource;
 use App\Models\Memorial;
+use App\Services\HtmlSanitizer;
 use Illuminate\Http\JsonResponse;
 
 class MemorialController extends Controller
@@ -16,10 +17,9 @@ class MemorialController extends Controller
         return new MemorialResource($memorial);
     }
 
-    public function updateAbout(UpdateAboutRequest $request, Memorial $memorial): MemorialResource
+    public function updateAbout(UpdateAboutRequest $request, Memorial $memorial, HtmlSanitizer $sanitizer): MemorialResource
     {
-        // TODO (production): sanitize $html through HTMLPurifier to prevent XSS
-        $memorial->update(['about_html' => $request->validated('about_html')]);
+        $memorial->update(['about_html' => $sanitizer->sanitize($request->validated('about_html'))]);
 
         // Clear draft on explicit save
         $memorial->draft()->delete();

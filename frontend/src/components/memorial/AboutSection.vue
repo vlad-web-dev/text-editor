@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, onBeforeUnmount } from 'vue'
 import { useAboutStore } from '@/stores/aboutStore'
 import AboutEditor from './AboutEditor.vue'
 import MobileEditorDialog from './MobileEditorDialog.vue'
@@ -25,6 +25,10 @@ onUnmounted(() => {
   mq?.removeEventListener('change', updateMobile)
 })
 
+onBeforeUnmount(() => {
+  store.cancelEditing()
+})
+
 // ─── Editor ref for Save (template-ref approach avoids lifting all state) ─────
 const editorRef = ref<InstanceType<typeof AboutEditor> | null>(null)
 
@@ -34,7 +38,7 @@ function onEditClick() {
 }
 
 function onSave(html?: string) {
-  const content = html ?? editorRef.value?.getHTML() ?? store.savedContent
+  const content = html ?? editorRef.value?.getHTML() ?? store.currentContent
   store.saveContent(content)
 }
 
@@ -80,9 +84,7 @@ function onChange(html: string) {
         <div class="about-section__editor-wrapper">
           <AboutEditor
             ref="editorRef"
-            :initial-content="store.hasDraft && store.draftContent !== null
-              ? store.draftContent
-              : store.savedContent"
+            :initial-content="store.currentContent"
             @change="onChange"
           />
         </div>
@@ -107,10 +109,9 @@ function onChange(html: string) {
     <MobileEditorDialog
       v-else
       :name="store.memorial?.name ?? ''"
-      :initial-content="store.hasDraft && store.draftContent !== null
-        ? store.draftContent
-        : store.savedContent"
+      :initial-content="store.currentContent"
       :is-saving="store.isSaving"
+      :error="store.error"
       @save="onSave"
       @cancel="onCancel"
       @change="onChange"

@@ -8,6 +8,7 @@ import { Color } from '@tiptap/extension-color'
 import { Link } from '@tiptap/extension-link'
 import Underline from '@tiptap/extension-underline'
 import { FontSize } from '@/extensions/FontSize'
+import { Indent } from '@/extensions/Indent'
 import EditorToolbar from './EditorToolbar.vue'
 
 const props = defineProps<{
@@ -28,6 +29,7 @@ const editor = useEditor({
     TextStyle,
     Color,
     FontSize,
+    Indent,
     Underline,
     Link.configure({ openOnClick: false }),
   ],

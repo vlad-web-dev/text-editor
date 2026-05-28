@@ -124,6 +124,22 @@ function selectList(opt: ListOption) {
   listOpen.value = false
   if (props.editor) opt.apply(props.editor)
 }
+function handleIncreaseIndent() {
+  if (!props.editor) return
+  if (props.editor.isActive('listItem')) {
+    props.editor.chain().focus().sinkListItem('listItem').run()
+  } else {
+    props.editor.chain().focus().increaseIndent().run()
+  }
+}
+function handleDecreaseIndent() {
+  if (!props.editor) return
+  if (props.editor.isActive('listItem')) {
+    props.editor.chain().focus().liftListItem('listItem').run()
+  } else {
+    props.editor.chain().focus().decreaseIndent().run()
+  }
+}
 function onColorInput(e: Event) {
   props.editor?.chain().focus().setColor((e.target as HTMLInputElement).value).run()
 }
@@ -133,7 +149,9 @@ function handleLink() {
     props.editor.chain().focus().unsetLink().run()
   } else {
     const url = window.prompt('Enter URL:')
-    if (url) props.editor.chain().focus().setLink({ href: url }).run()
+    if (url && /^https?:\/\//i.test(url)) {
+      props.editor.chain().focus().setLink({ href: url }).run()
+    }
   }
 }
 </script>
@@ -222,12 +240,21 @@ function handleLink() {
     </button>
 
     <!-- ── Decrease indent ───────────────────────────────────────────────────── -->
-    <button class="editor-toolbar__btn" title="Decrease indent" @click="editor?.chain().focus().liftListItem('listItem').run()">
+    <button
+      class="editor-toolbar__btn"
+      title="Decrease indent"
+      :disabled="!editor?.can().decreaseIndent() && !editor?.can().liftListItem('listItem')"
+      @click="handleDecreaseIndent"
+    >
       <span class="editor-toolbar__icon" v-html="outdentIcon" />
     </button>
 
     <!-- ── Increase indent ───────────────────────────────────────────────────── -->
-    <button class="editor-toolbar__btn" title="Increase indent" @click="editor?.chain().focus().sinkListItem('listItem').run()">
+    <button
+      class="editor-toolbar__btn"
+      title="Increase indent"
+      @click="handleIncreaseIndent"
+    >
       <span class="editor-toolbar__icon" v-html="indentIcon" />
     </button>
 

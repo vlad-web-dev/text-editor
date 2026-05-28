@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import EditorToolbar from '@/components/memorial/EditorToolbar.vue'
 
@@ -25,6 +25,8 @@ function makeEditorMock() {
     setHorizontalRule: () => chain,
     clearNodes: () => chain,
     unsetAllMarks: () => chain,
+    undo: () => chain,
+    redo: () => chain,
     run,
   }
   return {
@@ -34,69 +36,78 @@ function makeEditorMock() {
   }
 }
 
+const wrappers: ReturnType<typeof mount>[] = []
+
 function mountToolbar(editor: ReturnType<typeof makeEditorMock> | null = null) {
-  return mount(EditorToolbar, {
+  const w = mount(EditorToolbar, {
     props: { editor },
     attachTo: document.body,
   })
+  wrappers.push(w)
+  return w
 }
 
 beforeEach(() => {
   vi.clearAllMocks()
 })
 
-// Groups: [0] formatting (Aa▾ B I U A), [1] insert (⛓ ❝), [2] structure (≡▾ ☰▾ ⇤ ⇥ —), [3] utility (✕ <>)
+afterEach(() => {
+  wrappers.forEach(w => w.unmount())
+  wrappers.length = 0
+})
 
 // ─── Rendering ────────────────────────────────────────────────────────────────
 
 describe('rendering', () => {
-  it('renders 4 toolbar groups', () => {
+  it('renders 3 dropdown trigger buttons', () => {
     const wrapper = mountToolbar()
-    expect(wrapper.findAll('.editor-toolbar__group')).toHaveLength(4)
+    expect(wrapper.findAll('.editor-toolbar__btn--wide')).toHaveLength(3)
   })
 
   it('renders font size trigger button', () => {
     const wrapper = mountToolbar()
-    expect(wrapper.find('.editor-toolbar__fontsize-btn').exists()).toBe(true)
+    expect(wrapper.find('[title="Font size"]').exists()).toBe(true)
   })
 
   it('font size dropdown is hidden by default', () => {
-    const wrapper = mountToolbar()
-    expect(wrapper.find('.editor-toolbar__dropdown').exists()).toBe(false)
+    mountToolbar()
+    expect(document.querySelector('.editor-toolbar__dropdown')).toBeNull()
   })
 
   it('font size dropdown shows 6 options when opened', async () => {
     const wrapper = mountToolbar()
-    const fontsizeBtn = wrapper.findAll('.editor-toolbar__fontsize-btn')[0]
-    await fontsizeBtn.trigger('click')
-    const items = wrapper.findAll('.editor-toolbar__dropdown-item')
+    await wrapper.find('[title="Font size"]').trigger('click')
+    const items = document.querySelectorAll('.editor-toolbar__dropdown-item')
     expect(items).toHaveLength(6)
-    expect(items[0].text()).toBe('Small')
-    expect(items[3].text()).toBe('Heading 1')
+    expect(items[0].textContent).toBe('Small')
+    expect(items[3].textContent).toBe('Heading 1')
   })
 
-  it('renders B, I, U, A buttons in formatting group', () => {
+  it('renders Bold, Italic, Underline, Text color buttons', () => {
     const wrapper = mountToolbar()
-    const formatBtns = wrapper.findAll('.editor-toolbar__group')[0].findAll('.editor-toolbar__btn')
-    expect(formatBtns).toHaveLength(4)
+    expect(wrapper.find('[title="Bold (Ctrl+B)"]').exists()).toBe(true)
+    expect(wrapper.find('[title="Italic (Ctrl+I)"]').exists()).toBe(true)
+    expect(wrapper.find('[title="Underline (Ctrl+U)"]').exists()).toBe(true)
+    expect(wrapper.find('[title="Text color"]').exists()).toBe(true)
   })
 
-  it('renders link and blockquote buttons in insert group', () => {
+  it('renders link and blockquote buttons', () => {
     const wrapper = mountToolbar()
-    const insertBtns = wrapper.findAll('.editor-toolbar__group')[1].findAll('.editor-toolbar__btn')
-    expect(insertBtns).toHaveLength(2)
+    expect(wrapper.find('[title="Link"]').exists()).toBe(true)
+    expect(wrapper.find('[title="Blockquote"]').exists()).toBe(true)
   })
 
-  it('renders outdent, indent, hr buttons in structure group', () => {
+  it('renders outdent, indent, hr buttons', () => {
     const wrapper = mountToolbar()
-    const structureBtns = wrapper.findAll('.editor-toolbar__group')[2].findAll('.editor-toolbar__btn')
-    expect(structureBtns).toHaveLength(3)
+    expect(wrapper.find('[title="Decrease indent"]').exists()).toBe(true)
+    expect(wrapper.find('[title="Increase indent"]').exists()).toBe(true)
+    expect(wrapper.find('[title="Horizontal rule"]').exists()).toBe(true)
   })
 
-  it('renders clear and code buttons in utility group', () => {
+  it('renders clear and code buttons', () => {
     const wrapper = mountToolbar()
-    const utilityBtns = wrapper.findAll('.editor-toolbar__group')[3].findAll('.editor-toolbar__btn')
-    expect(utilityBtns).toHaveLength(2)
+    expect(wrapper.find('[title="Clear formatting"]').exists()).toBe(true)
+    expect(wrapper.find('[title="Code block"]').exists()).toBe(true)
   })
 
   it('renders hidden color input', () => {
@@ -110,84 +121,76 @@ describe('rendering', () => {
 describe('dropdown behaviour', () => {
   it('opens font size dropdown on trigger click', async () => {
     const wrapper = mountToolbar()
-    await wrapper.findAll('.editor-toolbar__fontsize-btn')[0].trigger('click')
-    expect(wrapper.find('.editor-toolbar__dropdown').exists()).toBe(true)
+    await wrapper.find('[title="Font size"]').trigger('click')
+    expect(document.querySelector('.editor-toolbar__dropdown')).not.toBeNull()
   })
 
   it('closes font size dropdown after selecting an option', async () => {
     const wrapper = mountToolbar()
-    await wrapper.findAll('.editor-toolbar__fontsize-btn')[0].trigger('click')
-    await wrapper.findAll('.editor-toolbar__dropdown-item')[0].trigger('click')
-    expect(wrapper.find('.editor-toolbar__dropdown').exists()).toBe(false)
+    await wrapper.find('[title="Font size"]').trigger('click')
+    ;(document.querySelector('.editor-toolbar__dropdown-item') as HTMLElement).click()
+    await wrapper.vm.$nextTick()
+    expect(document.querySelector('.editor-toolbar__dropdown')).toBeNull()
   })
 
   it('opens alignment dropdown on trigger click', async () => {
     const wrapper = mountToolbar()
-    // align trigger is the second __fontsize-btn (index 1)
-    await wrapper.findAll('.editor-toolbar__fontsize-btn')[1].trigger('click')
-    const items = wrapper.findAll('.editor-toolbar__dropdown-item')
+    await wrapper.find('[title="Text alignment"]').trigger('click')
+    const items = document.querySelectorAll('.editor-toolbar__dropdown-item')
     expect(items.length).toBeGreaterThanOrEqual(4)
-    expect(items[0].text()).toBe('Left')
-    expect(items[3].text()).toBe('Justify')
+    expect(items[0].textContent).toBe('Left')
+    expect(items[3].textContent).toBe('Justify')
   })
 
   it('opens list dropdown on trigger click', async () => {
     const wrapper = mountToolbar()
-    // list trigger is the third __fontsize-btn (index 2)
-    await wrapper.findAll('.editor-toolbar__fontsize-btn')[2].trigger('click')
-    const items = wrapper.findAll('.editor-toolbar__dropdown-item')
+    await wrapper.find('[title="Lists"]').trigger('click')
+    const items = document.querySelectorAll('.editor-toolbar__dropdown-item')
     expect(items).toHaveLength(2)
-    expect(items[0].text()).toBe('Bullet list')
-    expect(items[1].text()).toBe('Ordered list')
+    expect(items[0].textContent).toBe('Bullet list')
+    expect(items[1].textContent).toBe('Ordered list')
   })
 
   it('opening a second dropdown closes the first', async () => {
     const wrapper = mountToolbar()
-    await wrapper.findAll('.editor-toolbar__fontsize-btn')[0].trigger('click')
-    expect(wrapper.find('.editor-toolbar__dropdown').exists()).toBe(true)
+    await wrapper.find('[title="Font size"]').trigger('click')
+    expect(document.querySelectorAll('.editor-toolbar__dropdown')).toHaveLength(1)
 
-    // Open align dropdown — font size should close
-    await wrapper.findAll('.editor-toolbar__fontsize-btn')[1].trigger('click')
-    const items = wrapper.findAll('.editor-toolbar__dropdown-item')
-    // Only alignment items visible (4), not font-size items (6)
-    expect(items).toHaveLength(4)
+    await wrapper.find('[title="Text alignment"]').trigger('click')
+    // Only alignment items (4), not font-size items (6)
+    expect(document.querySelectorAll('.editor-toolbar__dropdown-item')).toHaveLength(4)
   })
 })
 
 // ─── Active state classes ─────────────────────────────────────────────────────
 
 describe('active state classes', () => {
-  it('adds _active to bold button when bold is active', async () => {
+  it('adds --active to bold button when bold is active', async () => {
     const editor = makeEditorMock()
     editor.isActive.mockImplementation((arg: unknown) => arg === 'bold')
     const wrapper = mountToolbar(editor as never)
     await wrapper.vm.$nextTick()
 
-    // group[0]: [B=0, I=1, U=2, A=3]
-    const btns = wrapper.findAll('.editor-toolbar__group')[0].findAll('.editor-toolbar__btn')
-    expect(btns[0].classes()).toContain('editor-toolbar__btn_active')
-    expect(btns[1].classes()).not.toContain('editor-toolbar__btn_active')
+    expect(wrapper.find('[title="Bold (Ctrl+B)"]').classes()).toContain('editor-toolbar__btn--active')
+    expect(wrapper.find('[title="Italic (Ctrl+I)"]').classes()).not.toContain('editor-toolbar__btn--active')
   })
 
-  it('adds _active to blockquote button when blockquote is active', async () => {
+  it('adds --active to blockquote button when blockquote is active', async () => {
     const editor = makeEditorMock()
     editor.isActive.mockImplementation((arg: unknown) => arg === 'blockquote')
     const wrapper = mountToolbar(editor as never)
     await wrapper.vm.$nextTick()
 
-    // group[1]: [link=0, blockquote=1]
-    const btns = wrapper.findAll('.editor-toolbar__group')[1].findAll('.editor-toolbar__btn')
-    expect(btns[1].classes()).toContain('editor-toolbar__btn_active')
+    expect(wrapper.find('[title="Blockquote"]').classes()).toContain('editor-toolbar__btn--active')
   })
 
-  it('adds _active to link button when link is active', async () => {
+  it('adds --active to link button when link is active', async () => {
     const editor = makeEditorMock()
     editor.isActive.mockImplementation((arg: unknown) => arg === 'link')
     const wrapper = mountToolbar(editor as never)
     await wrapper.vm.$nextTick()
 
-    const btns = wrapper.findAll('.editor-toolbar__group')[1].findAll('.editor-toolbar__btn')
-    expect(btns[0].classes()).toContain('editor-toolbar__btn_active')
+    expect(wrapper.find('[title="Link"]').classes()).toContain('editor-toolbar__btn--active')
   })
 })
 
@@ -200,8 +203,7 @@ describe('button commands', () => {
     const toggleBold = vi.spyOn(chain as never, 'toggleBold').mockReturnValue(chain)
     const wrapper = mountToolbar(editor as never)
 
-    const btns = wrapper.findAll('.editor-toolbar__group')[0].findAll('.editor-toolbar__btn')
-    await btns[0].trigger('click')
+    await wrapper.find('[title="Bold (Ctrl+B)"]').trigger('click')
     expect(toggleBold).toHaveBeenCalled()
   })
 
@@ -211,8 +213,7 @@ describe('button commands', () => {
     const toggleItalic = vi.spyOn(chain as never, 'toggleItalic').mockReturnValue(chain)
     const wrapper = mountToolbar(editor as never)
 
-    const btns = wrapper.findAll('.editor-toolbar__group')[0].findAll('.editor-toolbar__btn')
-    await btns[1].trigger('click')
+    await wrapper.find('[title="Italic (Ctrl+I)"]').trigger('click')
     expect(toggleItalic).toHaveBeenCalled()
   })
 
@@ -222,8 +223,7 @@ describe('button commands', () => {
     const toggleUnderline = vi.spyOn(chain as never, 'toggleUnderline').mockReturnValue(chain)
     const wrapper = mountToolbar(editor as never)
 
-    const btns = wrapper.findAll('.editor-toolbar__group')[0].findAll('.editor-toolbar__btn')
-    await btns[2].trigger('click')
+    await wrapper.find('[title="Underline (Ctrl+U)"]').trigger('click')
     expect(toggleUnderline).toHaveBeenCalled()
   })
 
@@ -246,8 +246,9 @@ describe('button commands', () => {
     const setFontSize = vi.spyOn(chain as never, 'setFontSize').mockReturnValue(chain)
     const wrapper = mountToolbar(editor as never)
 
-    await wrapper.findAll('.editor-toolbar__fontsize-btn')[0].trigger('click')
-    await wrapper.findAll('.editor-toolbar__dropdown-item')[1].trigger('click') // Normal = index 1
+    await wrapper.find('[title="Font size"]').trigger('click')
+    ;(document.querySelectorAll('.editor-toolbar__dropdown-item')[1] as HTMLElement).click() // Normal = index 1
+    await wrapper.vm.$nextTick()
     expect(setFontSize).toHaveBeenCalledWith('14')
   })
 
@@ -257,8 +258,9 @@ describe('button commands', () => {
     const toggleHeading = vi.spyOn(chain as never, 'toggleHeading').mockReturnValue(chain)
     const wrapper = mountToolbar(editor as never)
 
-    await wrapper.findAll('.editor-toolbar__fontsize-btn')[0].trigger('click')
-    await wrapper.findAll('.editor-toolbar__dropdown-item')[3].trigger('click') // H1 = index 3
+    await wrapper.find('[title="Font size"]').trigger('click')
+    ;(document.querySelectorAll('.editor-toolbar__dropdown-item')[3] as HTMLElement).click() // H1 = index 3
+    await wrapper.vm.$nextTick()
     expect(toggleHeading).toHaveBeenCalledWith({ level: 1 })
   })
 
@@ -269,8 +271,7 @@ describe('button commands', () => {
     vi.stubGlobal('prompt', vi.fn().mockReturnValue('https://example.com'))
     const wrapper = mountToolbar(editor as never)
 
-    const insertBtns = wrapper.findAll('.editor-toolbar__group')[1].findAll('.editor-toolbar__btn')
-    await insertBtns[0].trigger('click')
+    await wrapper.find('[title="Link"]').trigger('click')
     expect(setLink).toHaveBeenCalledWith({ href: 'https://example.com' })
   })
 
@@ -281,8 +282,7 @@ describe('button commands', () => {
     const unsetLink = vi.spyOn(chain as never, 'unsetLink').mockReturnValue(chain)
     const wrapper = mountToolbar(editor as never)
 
-    const insertBtns = wrapper.findAll('.editor-toolbar__group')[1].findAll('.editor-toolbar__btn')
-    await insertBtns[0].trigger('click')
+    await wrapper.find('[title="Link"]').trigger('click')
     expect(unsetLink).toHaveBeenCalled()
   })
 
@@ -292,8 +292,7 @@ describe('button commands', () => {
     const toggleBlockquote = vi.spyOn(chain as never, 'toggleBlockquote').mockReturnValue(chain)
     const wrapper = mountToolbar(editor as never)
 
-    const insertBtns = wrapper.findAll('.editor-toolbar__group')[1].findAll('.editor-toolbar__btn')
-    await insertBtns[1].trigger('click')
+    await wrapper.find('[title="Blockquote"]').trigger('click')
     expect(toggleBlockquote).toHaveBeenCalled()
   })
 
@@ -303,8 +302,9 @@ describe('button commands', () => {
     const setTextAlign = vi.spyOn(chain as never, 'setTextAlign').mockReturnValue(chain)
     const wrapper = mountToolbar(editor as never)
 
-    await wrapper.findAll('.editor-toolbar__fontsize-btn')[1].trigger('click') // align dropdown
-    await wrapper.findAll('.editor-toolbar__dropdown-item')[1].trigger('click') // Center = index 1
+    await wrapper.find('[title="Text alignment"]').trigger('click')
+    ;(document.querySelectorAll('.editor-toolbar__dropdown-item')[1] as HTMLElement).click() // Center = index 1
+    await wrapper.vm.$nextTick()
     expect(setTextAlign).toHaveBeenCalledWith('center')
   })
 
@@ -314,8 +314,9 @@ describe('button commands', () => {
     const toggleBulletList = vi.spyOn(chain as never, 'toggleBulletList').mockReturnValue(chain)
     const wrapper = mountToolbar(editor as never)
 
-    await wrapper.findAll('.editor-toolbar__fontsize-btn')[2].trigger('click') // list dropdown
-    await wrapper.findAll('.editor-toolbar__dropdown-item')[0].trigger('click') // Bullet = index 0
+    await wrapper.find('[title="Lists"]').trigger('click')
+    ;(document.querySelectorAll('.editor-toolbar__dropdown-item')[0] as HTMLElement).click() // Bullet = index 0
+    await wrapper.vm.$nextTick()
     expect(toggleBulletList).toHaveBeenCalled()
   })
 
@@ -325,8 +326,7 @@ describe('button commands', () => {
     const liftListItem = vi.spyOn(chain as never, 'liftListItem').mockReturnValue(chain)
     const wrapper = mountToolbar(editor as never)
 
-    const structureBtns = wrapper.findAll('.editor-toolbar__group')[2].findAll('.editor-toolbar__btn')
-    await structureBtns[0].trigger('click') // ⇤ outdent
+    await wrapper.find('[title="Decrease indent"]').trigger('click')
     expect(liftListItem).toHaveBeenCalledWith('listItem')
   })
 
@@ -336,8 +336,7 @@ describe('button commands', () => {
     const sinkListItem = vi.spyOn(chain as never, 'sinkListItem').mockReturnValue(chain)
     const wrapper = mountToolbar(editor as never)
 
-    const structureBtns = wrapper.findAll('.editor-toolbar__group')[2].findAll('.editor-toolbar__btn')
-    await structureBtns[1].trigger('click') // ⇥ indent
+    await wrapper.find('[title="Increase indent"]').trigger('click')
     expect(sinkListItem).toHaveBeenCalledWith('listItem')
   })
 
@@ -347,8 +346,7 @@ describe('button commands', () => {
     const setHorizontalRule = vi.spyOn(chain as never, 'setHorizontalRule').mockReturnValue(chain)
     const wrapper = mountToolbar(editor as never)
 
-    const structureBtns = wrapper.findAll('.editor-toolbar__group')[2].findAll('.editor-toolbar__btn')
-    await structureBtns[2].trigger('click') // — hr
+    await wrapper.find('[title="Horizontal rule"]').trigger('click')
     expect(setHorizontalRule).toHaveBeenCalled()
   })
 
@@ -359,8 +357,7 @@ describe('button commands', () => {
     const unsetAllMarks = vi.spyOn(chain as never, 'unsetAllMarks').mockReturnValue(chain)
     const wrapper = mountToolbar(editor as never)
 
-    const utilityBtns = wrapper.findAll('.editor-toolbar__group')[3].findAll('.editor-toolbar__btn')
-    await utilityBtns[0].trigger('click') // ✕ clear
+    await wrapper.find('[title="Clear formatting"]').trigger('click')
     expect(clearNodes).toHaveBeenCalled()
     expect(unsetAllMarks).toHaveBeenCalled()
   })
@@ -371,8 +368,7 @@ describe('button commands', () => {
     const toggleCodeBlock = vi.spyOn(chain as never, 'toggleCodeBlock').mockReturnValue(chain)
     const wrapper = mountToolbar(editor as never)
 
-    const utilityBtns = wrapper.findAll('.editor-toolbar__group')[3].findAll('.editor-toolbar__btn')
-    await utilityBtns[1].trigger('click') // <> code
+    await wrapper.find('[title="Code block"]').trigger('click')
     expect(toggleCodeBlock).toHaveBeenCalled()
   })
 })
@@ -392,7 +388,6 @@ describe('null editor', () => {
 
   it('does not throw when link button is clicked with null editor', async () => {
     const wrapper = mountToolbar(null)
-    const insertBtns = wrapper.findAll('.editor-toolbar__group')[1].findAll('.editor-toolbar__btn')
-    await expect(insertBtns[0].trigger('click')).resolves.not.toThrow()
+    await expect(wrapper.find('[title="Link"]').trigger('click')).resolves.not.toThrow()
   })
 })
